@@ -1,4 +1,5 @@
-onfigure Nginx to have a custom HTTP response header (on web-01 and web-02)
+#!/usr/bin/env bash
+# Configure Nginx to have a custom HTTP response header (on web-01 and web-02)
 # - The name of the custom HTTP header must be X-Served-By
 # - The value of the custom HTTP header must be the hostname of the server Nginx is running on
 
