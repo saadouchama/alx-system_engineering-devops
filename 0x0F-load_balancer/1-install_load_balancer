@@ -43,14 +43,14 @@ defaults
   timeout client 50000ms
   timeout server 50000ms
 
-frontend achrafelkhnissi.tech
+frontend wearetheworld.tech
   bind *:80
   default_backend servers
 
 backend servers
   balance roundrobin
-  server 233018-web-01 54.196.40.132:80 check
-  server 233018-web-02 52.23.213.94:80 check
+  server 378816-web-01 34.224.16.47:80 check
+  server 378816-web-02 3.84.161.85:80 check
 EOF
 
 # Enable HAProxy
