@@ -1,63 +1,7 @@
 #!/usr/bin/env bash
-# A script that installs and configures HAProxy on your web servers.
-function update() {
-echo "Updating apt-get..."
-  apt-get -y update &> /dev/null
-  echo "apt-get has been updated."
-}
-
-function install() {
-  if ! command -v "$1" &> /dev/null; then
-    update
-    echo "Installing $1..."
-    apt-get -y install "$1" &> /dev/null
-    echo "$1 has been installed."
-  else
-    echo "$1 is already installed."
-  fi
-}
-
-# Install HAProxy
-install haproxy
-
-# Give the user ownership to HAProxy files
-if [[ ! -d /etc/haproxy ]]; then
-  mkdir -p /etc/haproxy
-fi
-chown -R "$USER":"$USER" /etc/haproxy
-chmod -R 755 /etc/haproxy
-
-# Configure HAProxy
-if [[ ! -f /etc/haproxy/haproxy.cfg.bak ]]; then
-  cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.bak
-fi
-
-cat <<EOF > /etc/haproxy/haproxy.cfg
-global
-  daemon
-  maxconn 256
-
-defaults
-  mode http
-  timeout connect 5000ms
-  timeout client 50000ms
-  timeout server 50000ms
-
-frontend wearetheworld.tech
-  bind *:80
-  default_backend servers
-
-backend servers
-  balance roundrobin
-  server 378816-web-01 34.224.16.47:80 check
-  server 378816-web-02 3.84.161.85:80 check
-EOF
-
-# Enable HAProxy
-if [[ ! -f /etc/default/haproxy ]]; then
-  touch /etc/default/haproxy
-fi
-chown -R "$USER":"$USER" /etc/default/haproxy
-chmod -R 755 /etc/default/haproxy
-echo "ENABLED=1" >> /etc/default/haproxy
-service haproxy start
+#Double the number of webservers
+sudo apt update
+sudo apt install haproxy -y
+#sudo wget -q -O /etc/nginx/nginx.conf https://exampleconfig.com/static/raw/nginx/ubuntu20.04/etc/nginx/nginx.conf
+sudo sh -c 'echo "\nlisten myserver\n\tbind *:80\n\tbalance roundrobin\n\tserver server1 34.224.16.47:80 check\n\tserver server2 3.84.161.85:80 check\n" >> /etc/haproxy/haproxy.cfg'
+sudo service haproxy restart

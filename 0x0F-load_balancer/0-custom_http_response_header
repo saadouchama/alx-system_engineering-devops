@@ -1,105 +1,12 @@
 #!/usr/bin/env bash
-# Configure Nginx to have a custom HTTP response header (on web-01 and web-02)
-# - The name of the custom HTTP header must be X-Served-By
-# - The value of the custom HTTP header must be the hostname of the server Nginx is running on
+#Double the number of webservers
+sudo apt-get -y update
+sudo apt-get -y install nginx
 
-function install() {
-  # Check if the command exists
-  if ! command -v "$1" &> /dev/null; then
-    # Install the command
-    echo "Installing $1..."
-    apt-get -y update &> /dev/null
-    apt-get -y install "$1" &> /dev/null
-  else
-    echo "$1 is already installed."
-  fi
-}
-
-# Install nginx
-install nginx
-
-# Start nginx
-if [[ ! $(pgrep nginx) ]]; then
-  service nginx start
-fi
-
-# Allow Nginx through the firewall
-if ! ufw status | grep -qw "Nginx HTTP"; then
-  ufw allow 'Nginx HTTP'
-fi
-
-# Give the user ownership to website files
-if [[ ! -d /var/www/html ]]; then
-  mkdir -p /var/www/html
-fi
-chown -R "$USER":"$USER" /var/www/html
-chmod -R 755 /var/www/html
-
-# Create index.html
-if [[ ! -f /var/www/html/index.html ]]; then
-  echo "Hello World!" > /var/www/html/index.html
-fi
-
-# Create error page
-if [[ ! -f /var/www/html/404.html ]]; then
-  echo "Ceci n'est pas une page" > /var/www/html/404.html
-fi
-
-# Back up the default nginx configuration file
-if [[ ! -f /etc/nginx/sites-available/default.bak ]]; then
-  cp /etc/nginx/sites-available/default /etc/nginx/sites-available/default.bak
-  if [[ -f /etc/nginx/sites-enabled/default ]]; then
-    rm /etc/nginx/sites-enabled/default
-  fi
-fi
-
-# Write the configuration to the default file
-server_config=\
-"server {
-  listen 80 default_server;
-  listen [::]:80 default_server;
-
-  root /var/www/html;
-
-  index index.html index.htm index.nginx-debian.html;
-
-  server_name _;
-
-  location / {
-    try_files \$uri \$uri/ =404;
-  }
-
-  rewrite ^/redirect_me https://linkedin.com/in/saadouchama/ permanent;
-
-  error_page 404 /404.html;
-  location = /404.html {
-    root /var/www/html;
-    internal;
-  }
-
-  add_header X-Served-By \$hostname;
-}"
-
-# Add the configuration to the default file
-echo "$server_config" > /etc/nginx/sites-available/default
-
-# Create a symbolic link to the default file in the sites-enabled directory
-ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
-
-# Check if the configuration is valid
-if ! nginx -t; then
-  echo "Nginx configuration failed."
-  exit 1
-fi
-
-# Reload Nginx
-nginx -s reload
-
-# Check if Nginx is running and serving the expected content
-response=$(curl -s http://localhost)
-if [[ $response == "Hello World!" ]]; then
-  echo "Nginx installation and configuration successful!"
-else
-  echo "Nginx installation or configuration failed."
-  exit 1
-fi
+config="/etc/nginx/sites-available/default"
+sudo sh -c "echo 'Hello World!' > /var/www/html/index.nginx-debian.html"
+sudo sed -i '/^}$/i \ \n\tlocation \/redirect_me {return 301 https:\/\/www.youtube.com\/watch?v=QH2-TGUlwu4;}' $config
+sudo sed -i '/^}$/i \ \n\tlocation @404 {return 404 "Ceci n'\''est pas une page\\n";}' $config
+sudo sed -i 's/=404/@404/g' $config
+sudo sed -i "0,/location \/ {/s/location \/ {/&\n\t\tadd_header X-Served-By '$HOSTNAME';/" $config
+sudo service nginx restart
