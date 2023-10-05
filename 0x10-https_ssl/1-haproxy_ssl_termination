@@ -39,23 +39,23 @@ defaults
 	errorfile 504 /etc/haproxy/errors/504.http
 
 frontend www-frontend
-	bind *:80
-	reqadd X-Forwarded-Proto:\ http
-	# if configuration for certbot pass to certbot backend
-	acl letsencrypt-acl path_beg /.well-known/acme-challenge/
-	use_backend le-certbot-backend if letsencrypt-acl
+        bind *:80
+        reqadd X-Forwarded-Proto:\ http
+        # if configuration for certbot pass to certbot backend
+        acl letsencrypt-acl path_beg /.well-known/acme-challenge/
+        use_backend le-certbot-backend if letsencrypt-acl
 
-	default_backend www-backend
+        default_backend www-backend
 
 frontend www-https-frontend
-	bind *:443 ssl crt /etc/haproxy/certs/bennettdixon.online.pem
-	reqadd X-Forwarded-Proto:\ https
-	default_backend www-backend
+        bind *:443 ssl crt /etc/letsencrypt/live/www.wearetheworld.tech/privkey.pem
+        reqadd X-Forwarded-Proto:\ https
+        default_backend www-backend
 
 backend le-certbot-backend
-	server letsencrypt 127.0.0.1:8888
+        server letsencrypt 127.0.0.1:8888
 
 backend www-backend
         balance roundrobin
-        server 378816-web-01 34.224.16.47:80
-        server 378816-web-02 3.84.161.85:80
+        server 378816-web-01 34.224.16.47:80 check
+        server 378816-web-02 3.84.161.85:80 check
