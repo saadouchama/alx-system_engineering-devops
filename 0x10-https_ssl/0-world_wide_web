@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-script that will display information about subdomains
+# script that will display information about subdomains
 
 domain_info () {
     line=$(dig "$2"."$1" | grep -A1 'ANSWER SECTION:' | tr '\t' '\n' | tail -2 | tr '\n' ' ')
