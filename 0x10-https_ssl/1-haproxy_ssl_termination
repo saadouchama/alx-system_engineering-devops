@@ -48,7 +48,7 @@ frontend www-frontend
         default_backend www-backend
 
 frontend www-https-frontend
-        bind *:443 ssl crt /etc/letsencrypt/live/www.wearetheworld.tech/privkey.pem
+        bind *:443 ssl crt /etc/letsencrypt/live/www.wearetheworld.tech/fullchain.pem
         reqadd X-Forwarded-Proto:\ https
         default_backend www-backend
 
