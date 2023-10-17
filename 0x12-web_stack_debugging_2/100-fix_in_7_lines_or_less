@@ -14,3 +14,4 @@ fi
 chown -R nginx:nginx /var/lib/nginx /var/log/nginx
 
 nginx
+
